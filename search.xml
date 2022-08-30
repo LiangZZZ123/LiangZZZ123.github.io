@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Hello World</title>
+    <url>/archives/4a17b156.html</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>try1</title>
+    <url>/archives/3d4f966c.html</url>
+    <content><![CDATA[<p>In this post I’m trying to clarify some important definitions for digital signature and encryption in cryptology, and how they are used in HTTPS.</p>
+<p>I will also go through how digital signature and encryption are used in a HTTPS handshake in a somehow Q&amp;A version, and distinguish different cyber attacks(Length Extension Attack, MITM Attack, Downgrade Attack, Forward Security, Replay Attack) in this process.</p>
+<h1 id="Definitions-for-digital-signature-and-encryption"><a href="#Definitions-for-digital-signature-and-encryption" class="headerlink" title="Definitions for digital signature and encryption"></a>Definitions for digital signature and encryption</h1><ol>
+<li><p>For checking data integrity transmitted in a safe tunnel:</p>
+<ul>
+<li>md5, good enough</li>
+<li>sha2-256</li>
+</ul>
+</li>
+<li><p>For checking data integrity transmitted in a unsafe tunnel(digital signature):</p>
+<ul>
+<li><p>Symmetric signing algorithm</p>
+<ul>
+<li>Simply use <strong>md5&#x2F;sha256(key + text)</strong> is not good, this can be vulnerable to Length Extension Attack. We need to use HMAC: <code>MAC = hash(key + hash(key + message))</code></li>
+<li>HS256 (HMAC with SHA2-256), one key(one salt), determine if source has been modified by comparing HS256(source, key) with received_footprint</li>
+<li>hmac_md5, hmac_sha1, hmac_sha256, hmac_sha384, hmac_sha512, etc.</li>
+</ul>
+</li>
+<li><p>Asymmetric signing algorithm</p>
+<ul>
+<li>RS256 (RSA Signature with SHA2-256), private key + public key, determine if source has been modified by encoding + decoding<ul>
+<li>Q:Why SHA2-256 here can be used for encoding and decoding, isn’t digest of SHA2-256 irreversible?</li>
+<li>A: <a href="https://www.zhihu.com/question/25912483/answer/31653639">Asymmetric Digital Signature Algorithm, in Chinese, just for reference</a></li>
+<li><strong>Note that RSA can be used both for digital signature and for asymmetric encryption.</strong></li>
+<li>For clarity, we define <ul>
+<li>RS256: RSA for digital signature</li>
+<li>RSA-asym: RSA for asymmetric encryption</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Encryption algorithms</p>
+<ul>
+<li><p>Symmetric encryption algorithms</p>
+<ul>
+<li>AES(mode: CBC, GCM)<blockquote>
+<p><strong>AES-CBC(stream cipher)</strong>: CBC mode has an inherent limitation that in  the encryption direction (decryption doesn’t have this problem) the 16 byte blocks need to be processed one after another, limiting parallelism.  When you need to process many messages &#x2F; streams in parallel, you can get enough parallelism to saturate AESNI units, but that depends on traffic pattern.</p>
+</blockquote>
+<blockquote>
+<p><strong>AES-GCM(block cipher)</strong>: uses counter mode for encryption. It encrypts a counter and xor-operate the encryption of the counter with the plaintext. Since the encryption of each block is independent of other blocks, the  encryption of multiple blocks can be parallelized.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>Asymmetric encryption algorithms</p>
+<ul>
+<li>DH, RSA-asym, they are similar</li>
+<li>DHE: Forward Security</li>
+<li>ECDHE: Forward Security and faster!</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h1 id="HTTPS-HTTP-with-TLS"><a href="#HTTPS-HTTP-with-TLS" class="headerlink" title="HTTPS(HTTP with TLS)"></a>HTTPS(HTTP with TLS)</h1><p>Ref:<br><a href="https://www.processon.com/view/link/5f5054dc1e08531762bc05d6">mind map</a></p>
+<h2 id="Prerequisites-for-a-safe-HTTPS-connection"><a href="#Prerequisites-for-a-safe-HTTPS-connection" class="headerlink" title="Prerequisites for a safe HTTPS connection:"></a>Prerequisites for a safe HTTPS connection:</h2><p>After HTTPS is created, there is no worry for MITM(man-in-the-middle) Attack. A MITM Attack before&#x2F;during the building process of HTTPS will not success if the user operate the right way, with following prerequisites: </p>
+<ol>
+<li>CA does not certify CA certificates irresponsibly</li>
+<li>Root_CA_FILE in client’s operating system is not tampered</li>
+<li>The user does not ignore the unsafe alert from the browser. In other words, if the browser pops up the unsafe alert, then TLS must not be created.</li>
+<li>User’s browser should be able to deny Downgrade Attack</li>
+</ol>
+<h2 id="TLS-uses-following-cryptology-tech-in-sequence"><a href="#TLS-uses-following-cryptology-tech-in-sequence" class="headerlink" title="TLS uses following cryptology tech in sequence:"></a>TLS uses following cryptology tech in sequence:</h2><ul>
+<li><strong>Asymmetric Signing Algorithm</strong>: <ul>
+<li>For the client to verify CA certificate sent from the server.</li>
+<li>Notice that the client use <strong>CA-public-key</strong> to verify the integrity of website’s CA certificate.</li>
+</ul>
+</li>
+<li><strong>Asymmetric Encrypting Algorithm</strong>: <ul>
+<li>RSA-asym(deprecating): for client to encrypt and send random_text_as_key to the server, and server to decrypt and get random_text_as_key.</li>
+<li>Notice that the client use the <strong>website-public-key</strong>(got from the trusted CA certificate) to encrypt random_text_as_key.</li>
+<li>or DHE: for forward security</li>
+</ul>
+</li>
+<li><strong>Symmetric Encrypting Algorithm</strong>: <ul>
+<li>AES: for communication after TLS is created</li>
+</ul>
+</li>
+</ul>
+<h2 id="The-process-of-creating-TLS"><a href="#The-process-of-creating-TLS" class="headerlink" title="The process of creating TLS"></a>The process of creating TLS</h2><ul>
+<li><p>client links to the server(<a href="http://www.google.com/">www.google.com</a>)</p>
+</li>
+<li><p>server sends CA certificate to the client</p>
+<ul>
+<li>the certificate was created by CA origination, including<code>(plain_info, CA&#39;s_public_key, cipheredtext_of_plain_info_ciphered_by_CA&#39;s_private_key)</code></li>
+</ul>
+</li>
+<li><p>the client deciphers the cipheredtext using CA’s public key, and compare the<code>decipheredtext</code> with <code>plain_info</code>, if they are the same, then this certificate is valid.</p>
+<ul>
+<li><p>Q: How does the client get CA’s public key?</p>
+</li>
+<li><p>A: Say we have <strong>ROOT_CA&#x3D;&#x3D;certify &#x3D;&#x3D;&gt; MIDDLE_CA&#x3D;&#x3D;certify &#x3D;&#x3D;&gt; GOOGLE</strong>hierarchy. </p>
+<ul>
+<li>MIDDLE_CA’s public key is in CA certificate that ROOT_CA issued to him(MIDDLE_CA).</li>
+<li>ROOT_CA’s public key is embedded in your operating system;</li>
+<li>You will finally use ROOT_CA’s public key(getting that locally) to verify if the “CA certificate for MIDDLE_CA”(you received through web) is a real valid CA certificate.</li>
+</ul>
+</li>
+<li><p>Q: How to prove that it is <a href="http://www.google.com/">www.google.com</a> who sent the CA certificate to m(client)?</p>
+</li>
+<li><p>A: It doesn’t matter which server sends the CA certificate to the client,what matters is <strong>CA certificate contains the public key of the server that the client wants to visit</strong>!</p>
+</li>
+<li><p>Q: What if someone in the middle hijacks the on-the-way CA certificate, and replace it with another CA certificate?</p>
+</li>
+<li><p>A: the CA certificate will contain a CN(Common Name, also known as the Fully Qualified Domain Name) that points to its applicant(the server), if <code>that URL != the URL I input in the browser</code>, the browser will show unsafe alert. </p>
+<ul>
+<li><p>Q: What if the hijacker applies for a CA certificate with <code>CN=*.google.com, server_public_key=hijacker&#39;s_public_key</code> on it?</p>
+</li>
+<li><p>A: CA will verify if the applicant really owns the domain name as being applied for as a CN, if the applicant is not the owner, CA will not issue the certificate.</p>
+</li>
+<li><p>Q: Then what if the hijacker deliberately tempers with the CN written in the CA certificate?</p>
+</li>
+<li><p>A: Even if the applicant distorts the CN written in the CA certificate,he cannot create a valid cipheredtext, this is because the applicant doesn’t have CA’s private key. If the applicant forcibly create a fault_cipheredtext, then this fault_cipheredtext cannot be deciphered by CA’s public key(which lead to the failure of CA certificate verification),and CA’s public key is stored in client’s computer, for which reason the server cannot temper with(CA’s public key).</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Update-20220827, I found a better article demonstrating the continuing process in an HTTPS handshake(<a href="https://www.cryptologie.net/article/340/tls-pre-master-secrets-and-master-secrets/">https://www.cryptologie.net/article/340/tls-pre-master-secrets-and-master-secrets/</a>)</p>
+</li>
+<li><p>Now, I(the client) am sure that “I get the public key of the server that I want to visit”, then I do</p>
+<blockquote>
+<p>When RSA is used for server authentication and key exchange, a 48-<br> byte pre_master_secret is generated by the client, encrypted under<br> the server’s public key, and sent to the server.  The server uses its<br> private key to decrypt the pre_master_secret.  Both parties then<br> convert the pre_master_secret into the master_secret, as specified<br> above.<br> Ref: <a href="https://www.rfc-editor.org/rfc/rfc5246#section-8.1.1">https://www.rfc-editor.org/rfc/rfc5246#section-8.1.1</a></p>
+</blockquote>
+</li>
+<li><p>Then, both sides compute the master_secret by</p>
+<blockquote>
+<p>For all key exchange methods, the same algorithm is used to convert<br> the pre_master_secret into the master_secret.  The pre_master_secret<br> should be deleted from memory once the master_secret has been<br> computed.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt;master_secret = PRF(pre_master_secret, &quot;master secret&quot;,</span><br><span class="line">                      ClientHello.random + ServerHello.random)</span><br><span class="line">                      [0..47];</span><br></pre></td></tr></table></figure>
+<p>Ref: <a href="https://www.rfc-editor.org/rfc/rfc5246#section-8.1">https://www.rfc-editor.org/rfc/rfc5246#section-8.1</a> </p>
+</blockquote>
+<p>The reason both sides adding random info to genearte master_secret is for preventing RA-II(Packets Replay Attack) as will be covered later.</p>
+</li>
+<li><p>But now the process is still unsafe.</p>
+<ul>
+<li><strong>Forward Security</strong>: If the attacker gets server’s private key, all former communications are leaked. This requires that some row materials(used for creating the real symmetric key) should be:<ol>
+<li>ephemeral for every handshake</li>
+<li>not transferred between client and website</li>
+</ol>
+</li>
+<li>which is the feature that DHE algorithm can provide. So we need the next step.</li>
+</ul>
+</li>
+<li><p>先rsa，后dhe，保证dhe的p,q交换不会被中间人攻击</p>
+</li>
+<li><p>Next, this random_text_as_key will be a base for starting DHE. The user and the server start DHE(two sides exchange their DHE&#x2F;ECDHE keys, then DHE(other-side’s public key, local EPk) to generate the real symmetric key.</p>
+</li>
+<li><p>Finally, hash(the real symmetric key) to get the real key for communication. Hashing is just for tailoring the symmetric key to the certain length key.</p>
+</li>
+<li><p><strong>NOTE</strong>: for RSA, there is a <code>Pre-master Key, Master Key(tailored), Session Key</code> process, while for DHE, there is only a <code>Pre-master Key, Master Key(tailored)</code> process.</p>
+</li>
+</ul>
+<h2 id="Replay-Attack"><a href="#Replay-Attack" class="headerlink" title="Replay Attack"></a>Replay Attack</h2><ul>
+<li><p>RA-I(Insertion Replay Attack): say a complete http message is divided into three tcp packets(a,b,c) to be sent, the attacker temper the  http message to be (a,a,b,b,c,c), this can be handled by RS256(data,counter) verification.</p>
+</li>
+<li><p>RA-II(Packets Replay Attack), say after the client sent the complete http message(A), the attacker replay the whole http message, now the server receives (A,A). In this case, the side who does not contribute random info in the “real symmetric key generating process” will be vulnerable. This problem can be solved by both client and server sides adding random nonces to “real symmetric key generating process”.</p>
+<ul>
+<li>Note: random nonces are only needed for RSA, and not for DHE, because in DHE two sides already generated big random numbers Xb and Xa for computation.</li>
+</ul>
+</li>
+<li><p>TLS 1.3 has a faster way of resuming connection(0-RTT), which introduce the risk of a new Replay Attack, ways to avoid it including:</p>
+<ul>
+<li>Only allow idempotent request(GET) over 0-RTT;</li>
+<li>Add special parameter derived from <code>PSK binder</code> into the http header;</li>
+<li>Build replay resiliency on the application level.</li>
+<li>Ref: <a href="https://blog.cloudflare.com/introducing-0-rtt/">https://blog.cloudflare.com/introducing-0-rtt/</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="AEAD"><a href="#AEAD" class="headerlink" title="AEAD"></a>AEAD</h2><p>参照 <a href="https://www.rfc-editor.org/rfc/rfc5246#appendix-F.4">https://www.rfc-editor.org/rfc/rfc5246#appendix-F.4</a><br>在密钥传输完成后，从Record Layer开始</p>
+<blockquote>
+<p>TLS uses another method, called authenticate-then-encrypt,<br>   in which first a MAC is computed on the plaintext and then the<br>   concatenation of plaintext and MAC is encrypted. </p>
+</blockquote>
+<p>HMAC 被应用在：</p>
+<ol>
+<li>PRF中， PRF被应用在Record Layer之前的<br>- Premaster Secret, Master Secret的生成中，<br>- 以及Finished阶段verify_data的生成中：<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">   &gt;verify_data</span><br><span class="line">PRF(master_secret, finished_label, Hash(handshake_messages))</span><br><span class="line">   [0..verify_data_length-1];</span><br></pre></td></tr></table></figure>
+<p>REF: <a href="https://www.rfc-editor.org/rfc/rfc5246#section-7.4.9">https://www.rfc-editor.org/rfc/rfc5246#section-7.4.9</a></p>
+</blockquote>
+</li>
+<li>Record Layer的数据完整性验证中</li>
+</ol>
+<p>client不需要提供certificate，因为在最后一步FINISH，在dhe4分密码生成后，双方会把之前发送的信息 全部合起来 做一次 加密+签名 发送，<br>此时可能出现 client的4分密码 ！&#x3D; MITM &#x3D;&#x3D; server，即MITM与server享有相同的4分密码</p>
+<p>此时虽然MITM可以伪造client的发送信息，使server的验证通过。 但MITM无法伪造 能使client验证通过的 server的发送信息。</p>
+<h2 id="因此client-side可以自信地给出dh-Yc，并且不用担心dh-Yc是否会被MITM篡改"><a href="#因此client-side可以自信地给出dh-Yc，并且不用担心dh-Yc是否会被MITM篡改" class="headerlink" title="因此client side可以自信地给出dh_Yc，并且不用担心dh_Yc是否会被MITM篡改"></a>因此client side可以自信地给出dh_Yc，并且不用担心dh_Yc是否会被MITM篡改</h2><p>RSA公钥加密的数据是否能直接保证数据的完整性？<br><a href="https://www.zhihu.com/question/482608134">https://www.zhihu.com/question/482608134</a><br>RSA是块加密，如果密文直接丢失一个块，将不会在解密过程中被发现。</p>
+<p>所以即使是deprecated RSA，验证方式也是在FINISHED中 双方 使用拆出来的4密钥做一次完整性验证。</p>
+]]></content>
+  </entry>
+</search>
